@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "name": "Atlas onboarding",
+      "owner": "Nina Patel",
+      "status": "Active",
+      "recentActivity": "Published the revised setup checklist; the API walkthrough is ready for review.",
+      "priority": "High",
+      "summary": "Help new contributors get a local environment running quickly. Review the API walkthrough or test the setup steps on a fresh machine."
+    },
+    {
+      "name": "Community translations",
+      "owner": "Mateo Rivera",
+      "status": "Active",
+      "recentActivity": "Added French and Japanese strings to the translation review queue.",
+      "priority": "Medium",
+      "summary": "Make the contributor guide easier to use across regions. Translators can review queued strings, while developers can improve locale fallback behavior."
+    },
+    {
+      "name": "Release notes automation",
+      "owner": "Aisha Khan",
+      "status": "Blocked",
+      "recentActivity": "The release feed is waiting on access to the staging endpoint.",
+      "priority": "High",
+      "summary": "Generate a draft changelog from merged work. Help is useful to verify the release-note format and identify a safe sample feed for testing."
+    },
+    {
+      "name": "Accessibility audit",
+      "owner": "Evan Brooks",
+      "status": "Planned",
+      "recentActivity": "Collected keyboard-navigation reports from the latest contributor sessions.",
+      "priority": "Low",
+      "summary": "Track keyboard and screen-reader improvements across the contributor workflow. Contributors can help reproduce reported navigation issues."
+    },
+    {
+      "name": "Starter templates",
+      "owner": "Zoe Chen",
+      "status": "Completed",
+      "recentActivity": "Merged the refreshed issue and pull request templates.",
+      "priority": "Low",
+      "summary": "Give new contributors clear starting points for issues and pull requests. The templates are live; feedback on confusing prompts is welcome."
+    }
+  ]
+}

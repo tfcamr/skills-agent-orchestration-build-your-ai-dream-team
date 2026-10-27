@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f6f4">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div class="dashboard-heading">
+          <p class="dashboard-eyebrow">Contributor workspace</p>
+          <h1 class="dashboard-title">Project Pulse</h1>
+          <p class="dashboard-description">A clear view of what teams are building, where help is needed, and how to get involved.</p>
+        </div>
+      </header>
+
+      <section class="dashboard-overview" aria-label="Project status summary">
+        <div class="overview-item">
+          <span class="overview-label">All projects</span>
+          <span class="overview-value" id="total-count">—</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-label">Active</span>
+          <span class="overview-value" id="active-count">—</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-label">Needs attention</span>
+          <span class="overview-value" id="blocked-count">—</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="projects-title">
+        <div class="dashboard-section-heading">
+          <h2 class="dashboard-section-title" id="projects-title">Project portfolio</h2>
+          <p class="dashboard-section-note" id="projects-note">Loading project updates…</p>
+        </div>
+        <div id="project-content" aria-live="polite" aria-busy="true">
+          <p class="dashboard-section-note" role="status">Loading projects…</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const projectContent = document.querySelector("#project-content");
+      const projectsNote = document.querySelector("#projects-note");
+      const totalCount = document.querySelector("#total-count");
+      const activeCount = document.querySelector("#active-count");
+      const blockedCount = document.querySelector("#blocked-count");
+      const knownStatuses = new Set(["active", "planned", "blocked", "completed"]);
+      const knownPriorities = new Set(["high", "medium", "low"]);
+
+      function setCount(element, value) {
+        element.textContent = String(value);
+      }
+
+      function createMessage(className, title, description, role) {
+        const message = document.createElement("div");
+        message.className = className;
+        message.setAttribute("role", role);
+
+        const heading = document.createElement("h3");
+        heading.className = className === "dashboard-error" ? "dashboard-error-title" : "dashboard-empty-title";
+        heading.textContent = title;
+
+        const detail = document.createElement("p");
+        detail.textContent = description;
+        message.append(heading, detail);
+        return message;
+      }
+
+      function createProjectCard(project) {
+        const card = document.createElement("article");
+        const status = project.status.trim();
+        const priority = project.priority.trim();
+        const normalizedStatus = status.toLowerCase();
+        const normalizedPriority = priority.toLowerCase();
+        card.className = "project-card";
+
+        if (knownStatuses.has(normalizedStatus)) {
+          card.dataset.status = normalizedStatus;
+        }
+        if (knownPriorities.has(normalizedPriority)) {
+          card.dataset.priority = normalizedPriority;
+        }
+
+        const header = document.createElement("header");
+        header.className = "project-card-header";
+        const title = document.createElement("h3");
+        title.className = "project-card-title";
+        title.textContent = project.name;
+        header.append(title);
+
+        const owner = document.createElement("div");
+        owner.className = "project-card-owner";
+        const avatar = document.createElement("span");
+        avatar.className = "owner-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = project.owner
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part.charAt(0))
+          .join("")
+          .toUpperCase();
+        const ownerName = document.createElement("span");
+        ownerName.textContent = `Owner: ${project.owner}`;
+        owner.append(avatar, ownerName);
+
+        const summary = document.createElement("p");
+        summary.className = "project-card-summary";
+        summary.textContent = project.summary;
+
+        const activity = document.createElement("div");
+        activity.className = "project-card-activity";
+        const activityLabel = document.createElement("span");
+        activityLabel.className = "project-card-activity-label";
+        activityLabel.textContent = "Recent activity";
+        const activityText = document.createElement("p");
+        activityText.className = "project-card-activity-text";
+        activityText.textContent = project.recentActivity;
+        activity.append(activityLabel, activityText);
+
+        const footer = document.createElement("footer");
+        footer.className = "project-card-footer";
+        const statusBadge = document.createElement("span");
+        statusBadge.className = `status-badge${knownStatuses.has(normalizedStatus) ? ` status-${normalizedStatus}` : ""}`;
+        statusBadge.textContent = `Status: ${status}`;
+        const priorityBadge = document.createElement("span");
+        priorityBadge.className = `priority-badge${knownPriorities.has(normalizedPriority) ? ` priority-${normalizedPriority}` : ""}`;
+        priorityBadge.textContent = `Priority: ${priority}`;
+        footer.append(statusBadge, priorityBadge);
+
+        card.append(header, owner, summary, activity, footer);
+        return card;
+      }
+
+      function renderProjects(projects) {
+        projectContent.replaceChildren();
+        projectContent.setAttribute("aria-busy", "false");
+
+        if (projects.length === 0) {
+          projectsNote.textContent = "No projects to show.";
+          projectContent.append(
+            createMessage("dashboard-empty", "No projects yet", "Project updates will appear here when they are available.", "status")
+          );
+          return;
+        }
+
+        const activeProjects = projects.filter((project) => project.status.trim().toLowerCase() === "active").length;
+        const blockedProjects = projects.filter((project) => project.status.trim().toLowerCase() === "blocked").length;
+        setCount(totalCount, projects.length);
+        setCount(activeCount, activeProjects);
+        setCount(blockedCount, blockedProjects);
+        projectsNote.textContent = `${projects.length} projects · ${activeProjects} active · ${blockedProjects} need attention`;
+
+        const grid = document.createElement("div");
+        grid.className = "project-grid";
+        projects.forEach((project) => grid.append(createProjectCard(project)));
+        projectContent.append(grid);
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`Project data request failed with status ${response.status}.`);
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must contain a projects array.");
+          }
+
+          const validProjects = data.projects.every((project) =>
+            project && ["name", "owner", "status", "recentActivity", "priority", "summary"]
+              .every((field) => typeof project[field] === "string")
+          );
+          if (!validProjects) {
+            throw new Error("One or more project records are missing required text fields.");
+          }
+
+          renderProjects(data.projects);
+        } catch (error) {
+          projectContent.replaceChildren(
+            createMessage("dashboard-error", "Project updates unavailable", "The project list could not be loaded. Check the data file and try refreshing the page.", "alert")
+          );
+          projectContent.setAttribute("aria-busy", "false");
+          projectsNote.textContent = "Unable to load project updates.";
+          console.error("Unable to load Project Pulse data:", error);
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
